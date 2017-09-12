@@ -1,38 +1,33 @@
 var config = require('./appconfig.js')
 
 var elasticsearch = require('elasticsearch');
-var client = new elasticsearch.Client({
+var esClient = new elasticsearch.Client({
   host: config.esHost,
   log: 'trace'
 });
 
-var bittrex = require('node.bittrex.api');
+var bittrex = require('node-bittrex-api');
 var jsonic = require('jsonic');
+var io = require('socket.io')();
+var port = 8000;
 
-bittrex.options({
-  'apikey' : config.bittrexKey,
-  'apisecret' : config.bittrexSecret,
-  'cleartext' : true
-
-});
-
-var websocketsclient = bittrex.websockets.client();
-
-websocketsclient.serviceHandlers.connected = function (conn) {
-  console.log("Connected to Bittrex");
-}
-
-
-websocketsclient.serviceHandlers.reconnecting = function (message) {
-  return true;
-}
-
-websocketsclient.serviceHandlers.messageReceived = function (message) {
-  var message = jsonic(message.utf8Data);
-
-  client.index({
-          index: config.esIndex,
-          type: "document",
-          body: message
+bittrex.websockets.client(function(websocketsclient){
+  io.on('connection', (socketClient) => {
+    websocketsclient.serviceHandlers.messageReceived = function(data) {
+      var parsedData = jsonic(data.utf8Data);
+      socketClient.emit('receiveBittrex', parsedData);
+      esClient.index({
+              index: "crypy",
+              type: "document",
+              body: parsedData
       });
-}
+    };
+
+    websocketsclient.serviceHandlers.onerror = function (error) {
+      console.log('some error occured', error);
+    };
+  });
+  
+  io.listen(port);
+  console.log('Listening on port ', port);
+});

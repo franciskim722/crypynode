@@ -9,8 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@blueprintjs/core": "^1.27.0",
     "elasticsearch": "^13.3.1",
+    "fixed-data-table": "^0.6.4",
     "jsonic": "^0.3.0",
-    "node.bittrex.api": "^0.5.1"
+    "node.bittrex.api": "^0.5.1",
+    "pure-render-decorator": "^1.2.1",
+    "react-addons-css-transition-group": "^15.6.0",
+    "react-dom": "^15.6.1",
+    "socket.io": "^2.0.3",
+    "ws": "^3.1.0"
   }
 }
